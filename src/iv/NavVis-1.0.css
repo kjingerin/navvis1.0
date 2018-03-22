@@ -1,0 +1,359 @@
+.wrapper {
+    width: 100%;
+    height: 100%;
+    margin: 0 auto;
+    text-align: center;
+    position: relative;
+    top: 0;
+    left: 0;
+
+}
+
+.catalog {
+    width: 366px;
+    height: 100%;
+    background-color: #404040;
+    position: fixed;
+    right: 0;
+    top: 0;
+    z-index: 999;
+
+}
+.top> ul>li>ul{
+    overflow: hidden;
+    display: none;
+    position: absolute;
+    left: 0;
+    top: 80px;
+    width: 360px;
+    padding: 10px;
+    padding-top: 0;
+    height: 810px;
+    overflow-y: scroll;
+}
+.top{
+    position: relative;
+    top: 0;
+    left: 0;
+}
+.top> ul>li >ul> li{
+
+    width: 330px;
+
+    background-color: #f1f1f1;
+    box-shadow: 2px 2px 2px #e4e4e4;
+    box-shadow: 2px 2px 2px 1px#e4e4e4;
+}
+
+.top >ul>li >ul >li >h2{
+    margin: 0;
+    padding: 0;
+    height: 50px;
+    text-align: center;
+    line-height: 50px;
+    font-size: 16px;
+    color: #777;
+}
+.top> ul> li>ul>li >.pic{
+    width: 330px;
+    height: 300px;
+    background-image: url(images/1.png);
+    position: relative;
+    left: 0;
+    top: 0;
+}
+.top> ul> li>ul>li >.pic>i{
+    position: absolute;
+    left: 100px;
+    top: 100px;
+    display: block;
+    width: 48px;
+    height: 48px;
+    cursor: pointer;
+    background-image: url(images/position.gif);
+    background-size: 48px 48px;
+}
+.top> ul> li>ul>li >.txt-box{
+    padding: 10px;
+    font-size: 12px;
+    color: #777;
+    margin-bottom: 50px;
+    position: relative;
+    left: 0;
+    top: 0;
+}
+.top> ul> li>ul>li >.txt-box>.txt{
+    height: auto !important;
+}
+
+
+.top> ul> li>ul>li >.txt-box>span{
+    width: 100px;
+    height: 30px;
+    position: absolute;
+    left: 50%;
+    margin-left: -50px;
+    cursor: pointer;
+    bottom: -10px;
+    color: #000;
+    font-weight: 600;
+
+}
+.top> ul> li>ul>li >.txt-box>span:hover{
+    color: #de5855;
+}
+.top> ul> li>ul>li >.txt-box>#txt-hide{
+    display: none;
+}
+.top> ul> li>ul>li >.txt-box>p{
+    height: 60px;
+    line-height: 30px;
+    overflow: hidden;
+}
+.top> ul> li>ul>li >h3{
+    margin: 0;
+    padding: 0;
+    text-align: center;
+    line-height: 30px;
+    font-size: 16px;
+    color: #333;
+    padding-left: 10px;
+}
+.top > ul{
+    height: 35px;
+    padding: 0;
+    background-color: #f1f1f1;
+}
+.top > ul >li{
+    list-style: none;
+}
+.top > ul >li{
+    float: left;
+    height: 35px;
+    width: 40px;
+    background-color: #f1f1f1;
+    margin: 0 6px;
+    font-size: 12px;
+    text-align: center;
+    line-height: 34px;
+    color: #515151;
+
+
+}
+
+.top  ul  .active{
+    border-bottom: 4px solid #de5855;
+}
+.top > ul >li:hover{
+    border-bottom: 4px solid #de5855;
+    font-size: 15px;
+    color: #de5855;
+}
+.top > ul >li:nth-of-type(1){
+    width: 110px;
+    background-color: #de5855;
+    line-height: 35px;
+    color: #fff;
+    text-align: center;
+    font-size: 14px;
+    margin: 0;
+    margin-right: 10px;
+}
+
+/*¶¨Î»µãÂÖ²¥*/
+ html, body {
+     position: relative;
+     height: 100%;
+ }
+body {
+    background: #eee;
+    font-family: Helvetica Neue, Helvetica, Arial, sans-serif;
+    font-size: 14px;
+    color:#000;
+    margin: 0;
+    padding: 0;
+}
+.swiper-container {
+    width: 100%;
+    height: 100%;
+}
+.swiper-slide {
+    text-align: center;
+    font-size: 18px;
+    background: #fff;
+
+    /* Center slide text vertically */
+    display: -webkit-box;
+    display: -ms-flexbox;
+    display: -webkit-flex;
+    display: flex;
+    -webkit-box-pack: center;
+    -ms-flex-pack: center;
+    -webkit-justify-content: center;
+    justify-content: center;
+    -webkit-box-align: center;
+    -ms-flex-align: center;
+    -webkit-align-items: center;
+    align-items: center;
+}
+.introduce{
+    height: 200px;
+}
+.introduce .swiper-slide{
+
+    background-image: url(images/1.png);
+}
+
+
+
+.border-left {
+     border-left: none !important;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+#mainSceneUI .fixed-menu-bar .navbar-default {
+    background-color: transparent;
+    border: none;
+    top: 0;
+    position: fixed;
+    left: 77%;
+    width: 366px;
+    margin: 0;
+    padding: 0;
+    text-align: right;
+    z-index: 1000;
+}
+
+#mainSceneUI .fixed-menu-bar .navbar-default ul {
+    width: 366px;
+
+}
+
+#mainSceneUI .fixed-menu-bar .navbar-default ul li {
+    width: 66px;
+
+}
+
+#mainSceneUI .fixed-menu-bar .navbar-default ul li a i {
+    width: 66px;
+}
+
+
+
+
+.menu-option-form .btn-primary {
+    background-color: #de5855;
+    border: 0px;
+}
+
+fieldset[disabled] .btn-primary:hover {
+    background-color: #de5855 !important;
+    border-color: #de5855;
+}
+
+.form-group .form-control:focus {
+    outline-color: #de5855 !important;
+}
+
+
+
+.nav li:hover {
+    background-color: #de5855;
+    width: 66px;
+}
+
+.ng-scope {
+
+}
+
+#view {
+    position: fixed;
+    left: 0px;
+    bottom: 0px;
+    z-index: 99;
+    width: 300px;
+    height: 140px;
+
+}
+
+#view a {
+    width: 50px;
+    height: 50px;
+    background-color: #eb5c62;
+    display: block;
+    border-radius: 5px;
+    box-shadow: 2px 5px 5px #333;
+    text-decoration: none;
+    position: absolute;
+
+}
+
+#view a:hover {
+    background-color: #ec323a;
+}
+
+#view a:nth-of-type(1) {
+    left: 66px;
+    top: 0;
+    background-image: url(images/up.png);
+
+}
+
+#view a:nth-of-type(2) {
+    left: 0;
+    top: 66px;
+    background-image: url(images/left.png);
+}
+
+#view a:nth-of-type(3) {
+    left: 66px;
+    top: 66px;
+    background-image: url(images/down.png);
+}
+
+#view a:nth-of-type(4) {
+    left: 132px;
+    top: 66px;
+    background-image: url(images/right.png);
+}
+
+.menu-option-form {
+    right: 600px !important;
+}
+
+#insetPanel{
+    position: fixed !important;
+    right: 0;
+    bottom: 0%;
+}
+
+.threeD-overlay{
+    position: fixed;
+    left: 0;
+    top: 0;
+}
+.input-group-addon{
+    background-color: #eb5c62 !important;
+}
+.input-group-addon:hover{
+    background-color: #ec323a !important;
+}
+.input-group .form-control{
+
+    border-radius: 5px 0 0 5px !important;
+}
+
+
+
+
+

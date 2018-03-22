@@ -1,0 +1,76 @@
+<!--
+	Embedding NavVis Indoor Viewer using the JavaScript API
+-->
+
+<!doctype html>
+<html lang="en">
+<head>
+    <title>NavVis Indoor Viewer - Embedding Example</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <link rel="stylesheet" href="lib/swiper.min.css"/>
+    <link rel="stylesheet" href="./NavVis-1.0.css"/>
+
+    <!-- NavVis IndoorViewer -->
+    <!-- Replace 'https://demo.navvis.com/iv.dev' in this URL with the address of your IndoorViewer instance-->
+
+</head>
+<body>
+<div class="wrapper">
+
+    <div ng-include src="'iv.html'" style="height: 978px;;overflow: hidden"></div>
+    <div id="buttons">
+        <!-- createButtons adds buttons here -->
+    </div>
+</div>
+<video id="video" autoplay loop webkit-playsinline style="display:none">
+    <!--    <source src="textures/sintel.ogv" type='video/ogg; codecs="theora, vorbis"'>-->
+    <source src="../videos/1.mp4" type='video/mp4; codecs="avc1.42E01E, mp4a.40.2"'>
+</video>
+</body>
+</html>
+<!-- Swiper JS -->
+<script src="http://192.168.13.99:8080/iv/IndoorViewerAPI.js"></script>
+<script src="lib/swiper.min.js"></script>
+<script src="lib/jquery.min.js"></script>
+
+<script src="../js/three.js"></script>
+<script src="../js/Projector.js"></script>
+<script src="../js/CanvasRenderer.js"></script>
+<script src="../js/OrbitControls.js"></script>
+<script src="../js/stats.min.js"></script>
+<script src="../js/OBJLoader.js"></script>
+
+<script src="../js/DDSLoader.js"></script>
+<script src="../js/MTLLoader.js"></script>
+<script type="text/javascript">
+
+
+    var container, stats;
+    var camera, scene, renderer;
+    var particleMaterial;
+    var points = [];
+    var video, texture;
+    var woman;
+    var startwr = "";
+    function setLayers(){
+        var main_view = indoorViewer.getMainView();        //2.0.6版本下，main_view值正常，2.0.7版本main_view值为空
+
+    }
+
+    var indoorViewer;
+    window.IV.loaded(function () {
+        indoorViewer = new IndoorViewer({
+            'base_url': 'http://192.168.13.99:8080/iv',
+
+            'onLoadComplete': setLayers
+
+        });
+    });
+
+
+
+
+</script>
+
+
+

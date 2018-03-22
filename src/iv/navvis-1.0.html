@@ -1,0 +1,746 @@
+<!--
+	Embedding NavVis Indoor Viewer using the JavaScript API
+-->
+
+<!doctype html>
+<html lang="en">
+<head>
+    <title>NavVis Indoor Viewer - Embedding Example</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <link rel="stylesheet" href="lib/swiper.min.css"/>
+    <link rel="stylesheet" href="./NavVis-1.0.css"/>
+
+    <!-- NavVis IndoorViewer -->
+    <!-- Replace 'https://demo.navvis.com/iv.dev' in this URL with the address of your IndoorViewer instance-->
+
+</head>
+<body>
+<div class="wrapper">
+
+    <div ng-include src="'iv.html'" style="height: 978px;;overflow: hidden"></div>
+    <div id="buttons">
+        <!-- createButtons adds buttons here -->
+    </div>
+</div>
+<video id="video" autoplay loop webkit-playsinline style="display:none">
+<!--    <source src="textures/sintel.ogv" type='video/ogg; codecs="theora, vorbis"'>-->
+    <source src="../videos/1.mp4" type='video/mp4; codecs="avc1.42E01E, mp4a.40.2"'>
+</video>
+</body>
+</html>
+<!-- Swiper JS -->
+<script src="http://192.168.13.99:8080/iv/IndoorViewerAPI.js"></script>
+<script src="lib/swiper.min.js"></script>
+<!--<script src="lib/jquery.min.js"></script>-->
+<script src="../js/jquery-3.3.1.min.js"></script>
+<!--<script src="../js/angular.min.js"></script>-->
+
+<script src="../js/three.js"></script>
+<script src="../js/Projector.js"></script>
+<script src="../js/CanvasRenderer.js"></script>
+<script src="../js/OrbitControls.js"></script>
+<script src="../js/stats.min.js"></script>
+<script src="../js/OBJLoader.js"></script>
+
+<script src="../js/DDSLoader.js"></script>
+<script src="../js/MTLLoader.js"></script>
+<script type="text/javascript">
+
+
+    var particleMaterial;
+    var points = [];
+    var video, texture;
+    var woman;
+    var startwr = "";
+    var startcr = "";
+    var routearr = [];
+    var woman_move_fre = 1;
+
+    function setLayers(){
+        var main_view = indoorViewer.getMainView();
+        var layer = new ModelLayer(main_view, main_view.scene);
+        main_view.addToScene(layer);
+        // layer.paintSphere();
+        layer.paintFemale();
+        layer.paintVideo();
+        indoorViewer.addEventListener('routePlanned',routeplanned);
+
+        //获取用户权限
+        var jsondata = JSON.stringify({username:"admin",password:"twin,.123"});
+        // $.post('http://192.168.13.99:8080/iv/api/auth/token',jsondata,headers,function(){
+        //
+        // },'json')
+        $.ajax({
+            url:'http://192.168.13.99:8080/iv/api/auth/token',
+            dataType: 'json',
+            type: 'POST',
+            contentType:'application/json;charset=UTF-8',
+            data:jsondata,
+            success: function (data) {
+                // var getdata = JSON.stringify({token:data.token});
+                $.ajax({
+                    url: 'http://192.168.13.99:8080/iv/api/user',
+                    beforeSend: function(request) {
+                        request.setRequestHeader("X-Authorization", "Bearer "+data.token);
+                    },
+                    type: 'GET',
+                    contentType: 'application/json;application/javascript;text/javascript',
+                    // data: getdata,
+                    success: function (userdata) {
+                        var attr = userdata.attributes;
+                        var jsondata = JSON.stringify(attr);
+                        $.ajax({
+                            url: 'http://192.168.13.102:8080/InfoComm/role/queryRole.do',
+                            type: 'POST',
+                            contentType:'application/json;charset=UTF-8',
+                            headers:{
+
+                                'Access-Control-Allow-Headers':'Access-Control-Allow-Origin, X-Requested-With, Content-Type, Accept',
+                                'Access-Control-Allow-Origin':'*'
+                            },
+                            data: {
+                                attr:jsondata
+                            },
+                            success: function (userdata) {
+                                var attr = userdata.attributes;
+
+                            }
+                        });
+                    }
+                });
+            }
+        });
+
+    }
+    var ModelLayer = function(view, scene, params)
+    {
+        var that = this;
+        var image_service =  window.IV.injector.get('ImageService');
+        params             = params || {};
+        params.max_spheres = params.max_spheres || 3;
+
+        // Empty (no animations)
+        this.onTransitionEnd = function(image)
+        {
+            // this.paintFemale();
+        };
+        this.onBeforeRender = function(camera){
+            // this.paintFemale();
+        }
+        // Paint a new yellow sphere every time we change location
+        this.onTransitionStart = function(image)
+        {
+            // this.paintFemale();
+        };
+
+        var local_meshes = [];
+        this.paintFemale = function () {
+            // if (local_meshes.length === params.max_spheres)
+            // {
+            //     scene.remove(local_meshes[0]);
+            //     local_meshes.splice(0, 1);
+            // }
+
+            var loader = new IV.THREE.JSONLoader ();
+            loader.load('../modal/json_female/Female02_slim.json',function(geometry, materials ) {
+                materials[0].transparent = true;
+                materials[1].transparent = true;
+                materials[2].transparent = true;
+                materials[3].transparent = true;
+                materials[4].transparent = true;
+                materials[5].transparent = true;
+                var directionalLight = new IV.THREE.AmbientLight(0xffeedd );
+                scene.add( directionalLight );
+                var image_loc = view.currentImage.location;
+                mesh = new IV.THREE.Mesh( geometry, new IV.THREE.MultiMaterial( materials ));
+                mesh.scale.set(0.03,0.03,0.03);//比例尺
+                mesh.castShadow = true;
+                mesh.receiveShadow = true;
+
+                mesh.position.z = -3;
+                mesh.rotation.x = 1.5;
+                mesh.position.set(-2.46, -2.64, -0.66);
+                mesh.scale.x = 0.011;
+                mesh.scale.y = 0.011;
+                mesh.scale.z = 0.011;
+                (function(mesh){
+                    mesh.onClick = function()
+                    {
+                        alert("May I help you?");
+                    };
+
+                    mesh.onContextMenu = function()
+                    {
+                        return {
+                            name : 'Example button',
+                            icon: "delete",
+                            callback: function()
+                            {
+                                alert('Pressed me!')
+                            }
+                        };
+                    };
+                })(mesh);
+                scene.add( mesh );
+                woman = mesh;
+            });
+        };
+        this.paintVideo = function(){
+            video = document.getElementById( 'video' );
+            texture = new IV.THREE.VideoTexture( video );
+            texture.minFilter = IV.THREE.LinearFilter;
+            texture.magFilter = IV.THREE.LinearFilter;
+            texture.format = IV.THREE.RGBFormat;
+            var material = new IV.THREE.MeshBasicMaterial( { map: texture } );
+            var geometry = new IV.THREE.PlaneBufferGeometry( 16, 9 );
+            geometry.scale( 0.1, 0.1, 0.1 );
+            var mesh = new IV.THREE.Mesh( geometry, material );
+            mesh.rotateX(Math.PI/2);
+            mesh.position.set(-4.17, 1.24,1.66);
+            mesh.material.transparent = true;
+            mesh.castShadow = true;
+            mesh.receiveShadow = true;
+            (function(mesh){
+                mesh.onClick = function()
+                {
+                    alert("This is Videoplayer speaking.");
+                };
+                mesh.onContextMenu = function()
+                {
+                    return {
+                        name : 'Example button',
+                        icon: "delete",
+                        callback: function()
+                        {
+                            alert('Pressed me!')
+                        }
+                    };
+                };
+            })(mesh);
+            scene.add( mesh );
+        }
+        this.paintRock = function(){
+            var loader = new IV.THREE.ObjectLoader ();
+            loader.load('../modal/teapot-claraio.json',function(mesh ) {
+                mesh.material.transparent = true;
+                var image_loc = view.currentImage.location;
+                mesh.position.set(image_loc.x + 1, image_loc.y + 1, image_loc.z + 1); //x, y, z (local coordinates)
+                mesh.scale.set(0.3,0.3,0.3);//比例尺
+                mesh.rotation.x = 1.5;
+                scene.add( mesh );
+            });
+        }
+        this.paintWalt = function(){
+            var loader = new IV.THREE.JSONLoader ();
+            loader.load('../modal/json_female/WaltHeadLo.json',function(geometry, materials ) {
+                materials[0].transparent = true;
+                materials[1].transparent = true;
+                materials[2].transparent = true;
+                materials[3].transparent = true;
+                materials[4].transparent = true;
+                materials[5].transparent = true;
+                var image_loc = view.currentImage.location;
+                mesh = new IV.THREE.Mesh( geometry, new IV.THREE.MultiMaterial( materials ));
+                mesh.scale.set(0.03,0.03,0.03);//比例尺
+                mesh.castShadow = true;
+                mesh.receiveShadow = true;
+                mesh.position.z = -3;
+                mesh.rotation.x = 1.5;
+                mesh.position.set(-2.46, -2.64, -0.66);
+                mesh.scale.x = 0.012;
+                mesh.scale.y = 0.012;
+                mesh.scale.z = 0.012;
+                scene.add( mesh );
+                woman = mesh;
+            });
+        }
+        this.paintSphere = function()
+        {
+            if (local_meshes.length === params.max_spheres)
+            {
+                scene.remove(local_meshes[0]);
+                local_meshes.splice(0, 1);
+            }
+            // var geometry = new IV.THREE.BoxGeometry( 50,50,50,2,3,1);
+            var geometry = new IV.THREE.SphereGeometry(0.5, 20, 20);
+            var material = new IV.THREE.MeshLambertMaterial({color: 0xffff00, transparent: true, opacity: 0.8});
+            var object = new IV.THREE.Mesh( geometry, material );
+            var image_loc = view.currentImage.location;
+            object.position.set(image_loc.x + 1, image_loc.y + 1, image_loc.z + 1); //x, y, z (local coordinates)
+            scene.add( object );
+            var bgeometry = new IV.THREE.BoxGeometry( 1,1,1);
+            var bmaterial = new IV.THREE.MeshLambertMaterial({color: 0xff0000, transparent: true, opacity: 0.1});
+            var bobject = new IV.THREE.Mesh( bgeometry, bmaterial );
+            bobject.position.set(image_loc.x + 1, image_loc.y + 1, image_loc.z + 1); //x, y, z (local coordinates)
+            scene.add( bobject );
+            (function(object)
+            {
+                // Example click handler: clicking on a sphere removes it from the scene
+                object.onClick = function()
+                {
+                    scene.remove(object);
+                };
+
+                // Example context menu: displays a button which shows an alert
+                object.onContextMenu = function()
+                {
+                    return {
+                        name : 'Example button',
+                        icon: "delete",
+                        callback: function()
+                        {
+                            alert('Pressed me!')
+                        }
+                    };
+                };
+            })(object);
+            (function(bobject)
+            {
+                // Example click handler: clicking on a sphere removes it from the scene
+                bobject.onClick = function()
+                {
+                    scene.remove(bobject);
+                };
+
+                // Example context menu: displays a button which shows an alert
+                bobject.onContextMenu = function()
+                {
+                    return {
+                        name : 'Example1 button',
+                        icon: "delete",
+                        callback: function()
+                        {
+                            alert('Pressed me!')
+                        }
+                    };
+                };
+            })(bobject);
+
+            local_meshes.push(object);
+
+        };
+        this.paintPlantA = function(){
+            // if (local_meshes.length === params.max_spheres)
+            // {
+            //     scene.remove(local_meshes[0]);
+            //     local_meshes.splice(0, 1);
+            // }
+            // var geometry = new IV.THREE.BoxGeometry( 50,50,50,2,3,1);
+            var geometry = new IV.THREE.PlaneGeometry(2.5, 2);
+            var material = new IV.THREE.MeshLambertMaterial({color: 0xffff00, transparent: true, opacity: 1});
+            var objecta = new IV.THREE.Mesh( geometry, material );
+            objecta.position.set(-5.247, -3.84, 1.745); //x, y, z (local coordinates)
+            objecta.rotateX(Math.PI/2);
+            scene.add( objecta );
+
+        }
+        this.paintPlantB = function(){
+            var geometry = new IV.THREE.PlaneGeometry(3.5, 2);
+            var material = new IV.THREE.MeshLambertMaterial({color: 0xffff11, transparent: true, opacity: 0.1});
+            var objecta = new IV.THREE.Mesh( geometry, material );
+            objecta.position.set(-4.247, -3.84, 1.745); //x, y, z (local coordinates)
+            objecta.rotateX(Math.PI/2);
+            objecta.rotateY(Math.PI/2);
+            scene.add( objecta );
+
+        }
+        this.paintPlantB2 = function(){
+            var geometryb = new IV.THREE.PlaneGeometry(3.5, 2);
+            var materialb = new IV.THREE.MeshLambertMaterial({color: 0xffffff, transparent: true, opacity: 0.1});
+            var objectb = new IV.THREE.Mesh(geometryb, materialb);
+            objectb.position.set(-4.237, -3.84, 1.745);
+            objectb.rotateX(Math.PI/2);
+            objectb.rotateY(Math.PI*3/2);
+            scene.add(objectb);
+        }
+        this.paintWgs84Female = function(lat, lon, z){
+            var geo_service = window.IV.injector.get('GeoTransformationService');
+            var local = geo_service.toLocal(lat, lon, z);
+            var loader = new IV.THREE.JSONLoader ();
+            loader.load('../modal/json_female/Female02_slim.json',function(geometry, materials ) {
+                // loader.load('../modal/suzanne_geometry.json',function(geometry, materials ) {
+                materials[0].transparent = true;
+                materials[1].transparent = true;
+                materials[2].transparent = true;
+                materials[3].transparent = true;
+                materials[4].transparent = true;
+                materials[5].transparent = true;
+                // // materials[ 0 ].shading = THREE.FlatShading;
+                // var directionalLight = new IV.THREE.AmbientLight(0xffeedd );
+                // directionalLight.position.set( 0, 0, 1 ).normalize();
+                // scene.add( directionalLight );
+                var image_loc = view.currentImage.location;
+                mesh = new IV.THREE.Mesh( geometry, new IV.THREE.MultiMaterial( materials ));
+                mesh.scale.set(0.03,0.03,0.03);//比例尺
+                mesh.position.set(lat, lon, z);
+                mesh.position.z = -4;
+                mesh.rotation.x = 1.5;
+
+                scene.add( mesh );
+            });
+        };
+        // Example of how to use WGS-84 coordinates. Transform them to local ones using
+        // GeoTransformationService.toLocal();
+        this.paintWgs84Sphere = function(lat, lon, z)
+        {
+            var geo_service = window.IV.injector.get('GeoTransformationService');
+            var local = geo_service.toLocal(lat, lon, z);
+            var geometry = new IV.THREE.SphereGeometry(1, 32, 32);
+            var material = new IV.THREE.MeshLambertMaterial({color: 0xff0000, transparent: true, opacity: 0.8});
+            var mesh = new IV.THREE.Mesh(geometry, material);
+            mesh.position.set(local.x, local.y, local.z);
+            scene.add(mesh);
+
+        }
+
+    };
+    var animate_w_p_y_count = 0;
+    var rl = 0;
+    startcr = setInterval("moveCamera()",3000);
+    function routeplanned(){
+        var routeService = window.IV.injector.get('RouteService');
+        var route = routeService.routeData.interpolated_curve;
+        if (route != null) {
+            for(var i=0;i<route.length;i++){
+                var r = {
+                    x:route[i],
+                    y:route[++i],
+                    z:route[++i]
+                }
+                routearr.push(r);
+                i=i+3*woman_move_fre;
+            }
+            startwr = setInterval("moveModal()",500);
+            var geo_service = window.IV.injector.get('GeoTransformationService');
+        }
+    }
+
+    function loop() {
+        // ++animate_w_p_y_count;
+        // if(animate_w_p_y_count < 58){
+        //     woman.position.y -= 0.3;
+        // }else if(animate_w_p_y_count == 58){
+        //     woman.rotateY(Math.PI/2);
+        // }else if(animate_w_p_y_count > 58){
+        //     woman.position.x += 0.3;
+        // }
+
+    }
+    function moveCamera(){
+        if(rl > 0){
+            var mainview = indoorViewer.getMainView();
+            var wv = new IV.THREE.Vector3(routearr[rl-1].x,routearr[rl-1].y,routearr[rl-1].z);
+            indoorViewer.moveToGeoLocation(wv,true,mainview.getViewDir());
+            // mainview.datasetLocation
+        }
+    }
+    function moveModal(){
+        if(routearr.length > 0 && routearr.length > rl && rl == 0){
+            woman.position.x = routearr[rl].x;
+            woman.position.y = routearr[rl].y;
+            woman.position.z = routearr[rl].z;
+            ++rl;
+            return;
+        }
+        if(routearr.length > 0 && routearr.length > rl){
+            var diver_x = woman.position.x-routearr[rl].x;
+            var diver_y = woman.position.y-routearr[rl].y;
+            var diver_z = woman.position.z-routearr[rl].z;
+
+            var maxdiver = diver_x;
+            var maxtype = 'diver_x';
+            if (Math.abs(diver_x) > Math.abs(diver_y)) {
+                if (Math.abs(diver_x) < Math.abs(diver_z)) {
+                    maxdiver = diver_z;
+                    maxtype = 'diver_z';
+                }
+            } else {
+                if (Math.abs(diver_y) > Math.abs(diver_z)) {
+                    maxdiver = diver_y;
+                    maxtype = 'diver_y';
+                } else {
+                    maxdiver = diver_z;
+                    maxtype = 'diver_z';
+                }
+            }
+            if(maxtype == 'diver_x' &&  woman.position.x-routearr[rl].x < 0){
+                woman.rotation.y = 1.5;
+                console.log('1.5,'+ diver_y/diver_x);
+            }else if(maxtype == 'diver_x' && woman.position.x-routearr[rl].x > 0){
+                woman.rotation.y = -1.5;
+                console.log('-1.5,'+ diver_y/diver_x);
+            }else if(maxtype == 'diver_x' &&  woman.position.x-routearr[rl].x == 0){
+
+            }else if(maxtype == 'diver_y' && woman.position.y-routearr[rl].y < 0) {
+                woman.rotation.y = 3;
+                console.log('3,'+ diver_y/diver_x);
+            }else if(maxtype == 'diver_y' && woman.position.y-routearr[rl].y > 0){
+                woman.rotation.y = 0;
+                console.log('0,'+ diver_y/diver_x);
+            }else if(maxtype == 'diver_y' && woman.position.y-routearr[rl].y == 0){
+
+            }
+            woman.position.x = routearr[rl].x;
+            woman.position.y = routearr[rl].y;
+            woman.position.z = routearr[rl].z;
+
+            // var camera = mainview.getCamera();
+            // camera.position.x =  woman.position.x-1;
+            // camera.position.y =  woman.position.y-1;
+            // var renderer = mainview.renderer.render(mainview.scene,camera);
+            // camera.position.z =  woman.position.z;
+            ++rl;
+        }else if(routearr.length == rl && routearr.length != 0){
+            routearr = new Array();
+            window.clearInterval(startwr);
+            rl = 0;
+        }else{
+            routearr = new Array();
+            window.clearInterval(startwr);
+            rl = 0;
+        }
+    }
+    function sleep(d){
+        for(var t = Date.now();Date.now() - t <= d;);
+    }
+    var indoorViewer;
+    window.IV.loaded(function () {
+        indoorViewer = new IndoorViewer({
+            'base_url': 'http://192.168.13.99:8080/iv',
+
+            'onLoadComplete': setLayers
+
+        });
+
+
+    });
+
+    function createButtons()
+    {
+        var imageRepo = IV.injector.get("ImageRepository");
+        var geo_service = IV.injector.get('GeoTransformationService');
+        geo_service.getLineGeometryString().then(function(data)
+        {
+            var firstThreeImages = data.slice(0,3);
+            firstThreeImages.forEach(function(image, index)
+            {
+                // Generate button to image
+                var button = document.createElement("button");
+                button.innerHTML = 'Image ' + image.id;
+                button.onclick = (function(image)
+                {
+                    return function()
+                    {
+                        // We have an image resource, so we can use
+                        // the method that takes an image object:
+                        indoorViewer.moveToLocation(image);
+                    };
+                })(image);
+
+                document.getElementById('buttons').appendChild(button);
+            });
+        });
+
+
+        // Write some links to the document
+        imageRepo.findAll().then(function(data)
+        {
+            // Fetch and capture the first three images' metadata
+            var firstThreeImages = data.slice(0,3);
+            firstThreeImages.forEach(function(image, index)
+            {
+                // Generate button to image
+                var button = document.createElement("button");
+                button.innerHTML = 'Image ' + image.id;
+                button.onclick = (function(image)
+                {
+                    return function()
+                    {
+                        // We have an image resource, so we can use
+                        // the method that takes an image object:
+                        indoorViewer.moveToLocation(image);
+                    };
+                })(image);
+
+                document.getElementById('buttons').appendChild(button);
+            });
+        });
+
+        var poiRepo = IV.injector.get("PoiRepository");
+        poiRepo.findAll().then(function(data)
+        {
+            // Capture the first three POIs
+            var firstThreePois = data.slice(0,3);
+            firstThreePois.forEach(function(poi, index)
+            {
+                // Generate button to the POI
+                var button = document.createElement("button");
+                button.innerHTML = 'POI ' + poi.id;
+                button.onclick = (function(poi)
+                {
+                    return function()
+                    {
+                        indoorViewer.moveToPOI(poi);
+                    };
+                })(poi);
+
+                document.getElementById('buttons').appendChild(button);
+            });
+        });
+    }
+
+    function onWindowResize() {
+
+        camera.aspect = window.innerWidth / window.innerHeight;
+        camera.updateProjectionMatrix();
+
+        renderer.setSize( window.innerWidth, window.innerHeight );
+
+    }
+
+    function onDocumentTouchStart( event ) {
+
+        event.preventDefault();
+
+        event.clientX = event.touches[0].clientX;
+        event.clientY = event.touches[0].clientY;
+        onDocumentMouseDown( event );
+
+    }
+
+    function onDocumentMouseDown( event ) {
+        event.preventDefault();
+
+        mouse.x = ( event.clientX / renderer.domElement.clientWidth ) * 2 - 1;
+        mouse.y = - ( event.clientY / renderer.domElement.clientHeight ) * 2 + 1;
+
+        raycaster.setFromCamera( mouse, camera );
+
+        //射线原理拾取目标
+        var intersects = raycaster.intersectObjects( objects );
+
+        if ( intersects.length > 0 ) {
+
+            //创建粒子，便于标识点击位置
+            var particle = new THREE.Sprite( particleMaterial );
+            particle.position.copy( intersects[ 0 ].point );
+            particle.scale.x = particle.scale.y = 1;
+            scene.add( particle );
+
+            //保存选中点
+            points.push( intersects[ 0 ].point );
+
+            if( points.length >1 ) {
+
+                var p2 = points[points.length-1];
+                var p1 = points[points.length-2];
+
+                //动画的形式画线
+                // drawLine( p1, p2);
+            }
+
+        }
+
+    }
+
+
+
+    function drawLine( p1, p2) {
+
+        var directionVector = new THREE.Vector3();
+        var p3 = new THREE.Vector3();
+        directionVector.x = p2.x - p1.x;
+        directionVector.y = p2.y - p1.y;
+        directionVector.z = p2.z - p1.z;
+
+        var length = Math.sqrt( directionVector.x * directionVector.x
+            + directionVector.y * directionVector.y
+            + directionVector.z * directionVector.z);
+
+        var text = Math.round( length ) + "m";
+
+
+        var flag = 1;
+        var id = setInterval(function () {
+            if (flag == 11) {
+                clearInterval(id);
+                flag = 1;
+            } else {
+
+                var geometry = new THREE.Geometry();
+                var material = new THREE.LineBasicMaterial( { opacity:1,color:0x000000 } );
+
+                geometry.vertices.push(p1);
+
+                p3.x = p1.x + (directionVector.x/10) * flag;
+                p3.y = p1.y + (directionVector.y/10) * flag;
+                p3.z = p1.z + (directionVector.z/10) * flag;
+
+                geometry.vertices.push(p1);
+                geometry.vertices.push(p3);
+
+                var geo = new THREE.Line(geometry, material);
+
+                scene.add(geo);
+
+                flag++;
+            }
+
+        }, 10);
+
+        initText( text, p2 );
+
+    }
+
+    var font;
+    var loader = new THREE.FontLoader();
+    loader.load('../js/optimer_bold.typeface.json',function(response) {
+        font = response;
+
+    });
+    function initText( wordFont, p1){
+
+        var particleMaterial = new THREE.SpriteCanvasMaterial( {
+
+            color: 0x000000,
+            program: function ( context ) {
+
+                context.beginPath();
+                context.font="bold 20px Arial";
+                context.fillStyle="#058";
+                context.transform(-1,0,0,1,0,0);
+                context.rotate(Math.PI);
+                context.fillText( wordFont , 0, 0 );
+
+            }
+
+        } );
+
+        var particle = new THREE.Sprite( particleMaterial );
+        particle.position.copy( p1 );
+        particle.rotation.x = Math.PI/2;
+//      particle.lookAt( camera );
+        scene.add( particle );
+
+        var textGeometry = new THREE.TextGeometry(wordFont,{
+            "font": font,
+            "size" : 10,
+            "height" : 0,
+            "color" : 0x000000
+        })
+
+        var text = new THREE.Mesh( textGeometry, new THREE.MeshBasicMaterial( { color: 0x000000 } ) );
+
+
+        text.position.x = p1.x + 2;
+        text.position.y = p1.y + 2;
+        text.position.z = p1.z + 2;
+        text.lookAt(camera.position);
+        scene.add(text);
+
+    }
+</script>                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  
+              
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              
+                                                                  
+            
